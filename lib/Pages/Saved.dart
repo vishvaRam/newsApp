@@ -18,11 +18,11 @@ class _SavedNewsState extends State<SavedNews> {
           onTap: (){
             Navigator.push(context, MaterialPageRoute(builder: (context)=>WebtoViewer(data[i],widget.savedList)));
           },
-          onDoubleTap: (){
-            print("to Delete");
-            setState(() {
-              widget.savedList.removeAt(i);
-            });
+          onHorizontalDragEnd: (details){
+              print("to Delete");
+              setState(() {
+                widget.savedList.removeAt(i);
+              });
           },
           child: Padding(
             padding: const EdgeInsets.all(15.0),
@@ -36,27 +36,15 @@ class _SavedNewsState extends State<SavedNews> {
                 children: <Widget>[
                   Expanded(
                     flex: 3,
-                    child: Container(
-                      child: Column(
-                        children: <Widget>[
-                          Padding(
-                            padding: const EdgeInsets.only(top: 15.0,bottom: 10.0,left: 15.0),
-                            child: Container(
-                              height: 20.0,
-                              child: Text(data[i].source.name,style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.white54 : Colors.black38),),
-                              alignment: Alignment.topLeft,
-                            ),
+                    child: Center(
+                      child: Container(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 28,left: 15.0),
+                          child: Container(
+                              alignment: Alignment.topCenter,
+                              child: Text(data[i].title,style: TextStyle(fontFamily:'OpenSans',fontWeight: FontWeight.w500, fontSize: 18.0),overflow: TextOverflow.ellipsis,maxLines: 4,)
                           ),
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.only(top: 0,left: 15.0),
-                              child: Container(
-                                  alignment: Alignment.topCenter,
-                                  child: Text(data[i].title,style: TextStyle(fontFamily:'OpenSans',fontWeight: FontWeight.w500, fontSize: 18.0),overflow: TextOverflow.ellipsis,maxLines: 3,)
-                              ),
-                            ),
-                          )
-                        ],
+                        ),
                       ),
                     ),
                   ),

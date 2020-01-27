@@ -33,15 +33,10 @@ class Data{
   }
 
   Map<String,dynamic> toMap() => {
-    "source": source.toMap().toString(),
+    "author":author,
     "url":url,
     "title":title,
     "urlToImage":urltoimg
   };
 
-  Map<String,dynamic> toMapWithoutname() => {
-    "url":url,
-    "title":title,
-    "urlToimage":urltoimg
-  };
 }
