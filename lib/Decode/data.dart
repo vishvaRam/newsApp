@@ -6,6 +6,10 @@ class Source{
   factory Source.fromJson(Map<String,dynamic> json){
     return Source(name: json['name']);
   }
+
+  Map<String,dynamic> toMap() =>{
+    "name": name
+  };
 }
 
 class Data{
@@ -27,4 +31,17 @@ class Data{
       urltoimg: json['urlToImage']
     );
   }
+
+  Map<String,dynamic> toMap() => {
+    "source": source.toMap().toString(),
+    "url":url,
+    "title":title,
+    "urlToImage":urltoimg
+  };
+
+  Map<String,dynamic> toMapWithoutname() => {
+    "url":url,
+    "title":title,
+    "urlToimage":urltoimg
+  };
 }

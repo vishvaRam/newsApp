@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:newsapp/Decode/data.dart';
 import 'WebView.dart';
-
 class SavedNews extends StatefulWidget {
   final List<Data> savedList;
   SavedNews(this.savedList);
@@ -20,6 +19,7 @@ class _SavedNewsState extends State<SavedNews> {
             Navigator.push(context, MaterialPageRoute(builder: (context)=>WebtoViewer(data[i],widget.savedList)));
           },
           onDoubleTap: (){
+            print("to Delete");
             setState(() {
               widget.savedList.removeAt(i);
             });

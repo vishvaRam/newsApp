@@ -5,10 +5,7 @@ import 'package:newsapp/Decode/data.dart';
 
 
 class Networking {
-  String url;
-  Networking(this.url);
-
-  Future<List<Data>> output() async{
+  Future<List<Data>> output(String url) async{
     print(url);
     List local = List<Data>();
     try{
@@ -27,8 +24,9 @@ class Networking {
           throw("err");
       }
       return local;
-    }catch(err){
+    }catch(err,SocketException){
       print(err);
+      print(SocketException);
       return null;
     }
   }

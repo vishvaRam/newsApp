@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-
 import 'package:newsapp/Decode/data.dart';
 
 enum isSaved {
@@ -19,6 +18,15 @@ class WebtoViewer extends StatefulWidget {
 class _WebtoViewerState extends State<WebtoViewer> {
   var temp = isSaved.False;
   bool color = false;
+  bool isLoading;
+
+  @override
+  void initState() {
+    setState(() {
+      isLoading =true;
+    });
+    super.initState();
+  }
 
   final emptyWidget = Center(
     child: Text("Empty"),
@@ -35,25 +43,35 @@ class _WebtoViewerState extends State<WebtoViewer> {
   }
 
   Widget viewer(String url){
-    return WebView(
-      initialUrl: url,
-      javascriptMode: JavascriptMode.unrestricted,
-    );
+    return Stack(children: <Widget>[
+      WebView(
+        initialUrl: url,
+        javascriptMode: JavascriptMode.unrestricted,
+        onPageFinished: (_){
+          setState(() {
+            isLoading = false;
+          });
+        },
+      ),
+      isLoading ? Container(
+        alignment: FractionalOffset.center,
+        child: CircularProgressIndicator(),
+      ): Container(),
+    ],);
   }
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(title: Text("Explore"),),
       body: SafeArea(
         child: widget.data.url == null ? emptyWidget : viewer(widget.data.url),
       ),
-
       floatingActionButton: Builder(
         builder: (context){
           return FloatingActionButton(
             onPressed: (){
+              print("to Save");
 
               if(widget.saved.length == 0){
                 showSnackBar(context, "Saved to bookmarks");

@@ -1,25 +1,35 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-
-import 'Style.dart';
 import 'Functionality/Networking.dart';
 import 'package:newsapp/Decode/data.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter/rendering.dart';
-import 'Pages/WebView.dart';
 import 'package:newsapp/Pages/Saved.dart';
+import 'listViewer.dart';
 
 
 void main() {
   runApp(MyApp());
 }
 
-const String Country = "us";
-const int pageSize = 40;
+const String Country = "in";
 const String ApiKey = "&apiKey=318936fec83d46d0b6fb17784fe63c32";
-var uRL = "https://newsapi.org/v2/top-headlines?country="+Country+"&pageSize="+pageSize.toString()+ApiKey;
+const String rawUrl = "https://newsapi.org/v2/top-headlines?pageSize=50&country=";
+const String all = rawUrl+Country+ApiKey;
+const String category= "&category=";
+var technology = rawUrl + Country+category+"technology"+ApiKey;
+var entertain = rawUrl + Country+category+"entertainment"+ApiKey;
+var sport = rawUrl + Country+category+"sports"+ApiKey;
+var bussi = rawUrl + Country+category+"business"+ApiKey;
+var sc = rawUrl + Country+category+"science"+ApiKey;
 
-class MyApp extends StatelessWidget {
+
+
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -39,92 +49,68 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMixin{
+
   List topNews = List<Data>();
   List savedNews = List<Data>();
-
+  List tech = List<Data>();
+  List entertainment = List<Data>();
+  List sports = List<Data>();
+  List business = List<Data>();
+  List science = List<Data>();
 
   @override
   void initState() {
     super.initState();
 
-    print("Saved Data = "+ savedNews.length.toString());
-    Networking net = Networking(uRL);
-    net.output().then((data){
+    Networking net = Networking();
+    net.output(all).then((data){
       setState(() {
         topNews.addAll(data);
       });
     });
+    net.output(technology).then((q){
+      setState(() {
+        tech.addAll(q);
+      });
+    });
+
+    net.output(entertain).then((data){
+      setState(() {
+        entertainment.addAll(data);
+      });
+    });
+
+    net.output(sport).then((data){
+      setState(() {
+        sports.addAll(data);
+      });
+
+    });
+    net.output(bussi).then((data){
+      setState(() {
+        business.addAll(data);
+      });
+    });
+    net.output(sc).then((data){
+      setState(() {
+        science.addAll(data);
+      });
+    });
   }
 
-  Widget listBuilder (dynamic data){
-    return ListView.builder(
-      itemCount: data.length,
-      itemBuilder: (BuildContext context, int i){
-        return Padding(
-          key: Key(data[i].title),
-          padding: const EdgeInsets.only(top: 10.0,left: 18.0,right: 18.0),
-          child: GestureDetector(
-            onTap: (){
-              print("sent to Explorer");
-              Navigator.push(context, MaterialPageRoute(builder: (context)=>WebtoViewer(data[i],savedNews)));
-            },
-            child: Column(
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 5.0),
-                  child: Container(
-                      height: 170,
-                      width: double.infinity,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.only(topLeft: Radius.circular(16.0),topRight: Radius.circular(16.0),bottomLeft:Radius.circular(16.0),bottomRight: Radius.circular(16.0) ),
-                        child: data[i].urltoimg == null ? Image(
-                          fit: BoxFit.cover,
-                          image: AssetImage('assets/img1.jpg'),
-                        ) : Image(
-                            fit: BoxFit.cover,image: NetworkImage(data[i].urltoimg)
-                        ),
-                      )
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(18.0, 0.0, 18.0, 20.0),
-                  child: Column(
-                    children: <Widget>[
-                      Container(
-                        alignment: Alignment.topLeft,
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 8.0,top: 5.0),
-                          child: Text(data[i].source.name,style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.white60 : Colors.black45)),
-                        ),
-                      ),
-                      Text(
-                        data[i].title,style: headLineStyle,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 3,
-                      )
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
 
-  Widget spinner = Center(
-    child: SpinKitDoubleBounce(
-      size: 70.0,
-      color: Colors.blue,
-    ),
-  );
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
+//      drawer: Drawer(
+//        child: ,
+//        ),
+
       appBar: AppBar(
+        centerTitle: true,
         title: Text("News"),
         actions: <Widget>[
           IconButton(
@@ -136,10 +122,6 @@ class _MyHomePageState extends State<MyHomePage> {
               ));
               if(savedNews.length!=0){
                 print(savedNews.length.toString());
-//                print("Length =="+savedNews.length.toString());
-//                for(var i=0;i<=savedNews.length;i++){
-//                  print(i.toString()+"=="+savedNews[i].url);
-//                }
               }
               else{
                 print("Empty!");
@@ -148,14 +130,40 @@ class _MyHomePageState extends State<MyHomePage> {
           )
         ],
       ),
-      body: ListView(
-        children: <Widget>[
-          Container(
-            height: MediaQuery.of(context).size.height - 90.0,
-              child: topNews.length == 0 ? spinner : listBuilder(topNews)
-          ),
-        ],
-      ),
+
+      //topNews.length == 0 ? spinner : listBuilder(topNews)
+
+      body: DefaultTabController(length: 6,
+        child: Scaffold(
+          appBar: TabBar(
+            indicatorColor: Colors.black,
+            indicator: BoxDecoration(
+              borderRadius: BorderRadius.all(Radius.circular(40.0)),
+              color: Theme.of(context).primaryColorLight
+            ),
+            isScrollable: true,
+              tabs: [
+            Tab(text: "All",),
+            Tab(text: "Tech",),
+            Tab(text: "Entertainment",),
+            Tab(text: "Sports",),
+            Tab(text: "business",),
+            Tab(text: "Science",),
+          ]),
+          body: TabBarView(
+              children: <Widget>[
+            topNews.length == 0 ? Center(child: CircularProgressIndicator(),): ListViewer(topNews,savedNews),
+            topNews.length == 0 ? Center(child: CircularProgressIndicator(),) : ListViewer(tech,savedNews),
+            topNews.length == 0 ? Center(child: CircularProgressIndicator(),) : ListViewer(entertainment,savedNews),
+            topNews.length == 0 ? Center(child: CircularProgressIndicator(),) : ListViewer(sports,savedNews),
+            topNews.length == 0 ? Center(child: CircularProgressIndicator(),) : ListViewer(business,savedNews),
+            topNews.length == 0 ? Center(child: CircularProgressIndicator(),) : ListViewer(science,savedNews),
+          ]),
+        ),),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
+
 }
