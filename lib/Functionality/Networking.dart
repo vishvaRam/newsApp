@@ -23,7 +23,7 @@ class Networking {
         return local;
       }
     }catch(SocketException){
-      print("Printed === "+SocketException.toString());
+      print("Network error === "+SocketException.toString());
       return null;
     }
   }

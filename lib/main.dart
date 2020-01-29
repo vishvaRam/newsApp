@@ -145,11 +145,6 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
           saved = result;
         });
       }
-      if(saved != null){
-        for(int i=0 ; i<result.length;i++){
-          print(result[i].url);
-        }
-      }
     }catch(NoSuchMethod){
       print('Emp');
     }

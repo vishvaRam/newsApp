@@ -35,7 +35,6 @@ class Data{
   }
 
 
-
   Map<String,dynamic> toMap() => {
     "url":url,
     "title":title,

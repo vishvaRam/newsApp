@@ -40,10 +40,18 @@ class _ListViewerState extends State<ListViewer> with AutomaticKeepAliveClientMi
                         width: double.infinity,
                         child: ClipRRect(
                           borderRadius: BorderRadius.only(topLeft: Radius.circular(16.0),topRight: Radius.circular(16.0),bottomLeft:Radius.circular(16.0),bottomRight: Radius.circular(16.0) ),
-                          child: widget.data[i].urltoimg == null ? Image(
+                          child: widget.data[i].urltoimg == null ?
+                          Image(
                             fit: BoxFit.cover,
                             image: AssetImage('assets/img1.jpg'),
-                          ) : CachedNetworkImage(fit: BoxFit.cover,imageUrl: widget.data[i].urltoimg,),
+                          ) :
+                          CachedNetworkImage(
+                            fit: BoxFit.cover
+                            ,imageUrl: widget.data[i].urltoimg,
+                            key: Key(widget.data[i].urltoimg),
+                            placeholder: (context, url) => Center(child: CircularProgressIndicator()),
+                            errorWidget: (context, url, error) => Icon(Icons.error,size: 50.0,),
+                          ),
                         )
                     ),
                   ),

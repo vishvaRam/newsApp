@@ -71,11 +71,6 @@ class _WebtoViewerState extends State<WebtoViewer> {
       if(result != null){
         return result;
       }
-      if(widget.savedList != null){
-        for(int i=0 ; i<result.length;i++){
-          print(result[i].url);
-        }
-      }
     }catch(NoSuchMethod){
       print('Emp');
     }
@@ -97,13 +92,6 @@ class _WebtoViewerState extends State<WebtoViewer> {
               var sa =await dB.insert(widget.data);
               print(sa);
               var res = await getDataFromDB();
-              print("result from DB = "+res.toString());
-              if(res.length == 0){
-                setState(() {
-                  widget.savedList = res;
-                });
-                return;
-              }
               setState(() {
                 widget.savedList = res;
               });

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:newsapp/Decode/data.dart';
+import 'package:newsapp/Pages/Saved.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -37,6 +38,7 @@ class DatabaseHelper{
     return await openDatabase(path,version: _databaseVersion,onCreate: _onCreate);
   }
 
+  // Creatin DB
   Future _onCreate(Database db,int version) async{
     print("DB Created");
     return db.execute('''
@@ -48,12 +50,14 @@ class DatabaseHelper{
           ''');
   }
 
+  // Insert to DB
   Future<int> insert(Data data) async {
     print("Inserted");
     Database db = await instance.database;
     return await db.insert(table, data.toMap(),conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
+  // Get all from DB
   Future<List<Data>> queryAllRows() async {
     Database db = await instance.database;
 
@@ -72,4 +76,12 @@ class DatabaseHelper{
       return null;
     }
   }
+
+  // Delete from DB
+  Future<void> delete(String url) async{
+    Database db = await instance.database;
+    await db.delete(table,where: "url = ?",whereArgs: [url]);
+    print("Deleted from DB");
+  }
+  
 }
