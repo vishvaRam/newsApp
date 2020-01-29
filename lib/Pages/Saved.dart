@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:newsapp/Decode/data.dart';
+import 'package:newsapp/Functionality/database.dart';
 import 'WebView.dart';
+
+// Singelton class instance
+final dB = DatabaseHelper.instance;
+
+
 class SavedNews extends StatefulWidget {
-  final List<Data> savedList;
-  SavedNews(this.savedList);
+  List<Data> saved = List<Data>();
+  SavedNews(this.saved);
   @override
   _SavedNewsState createState() => _SavedNewsState();
 }
@@ -12,16 +18,16 @@ class _SavedNewsState extends State<SavedNews> {
 
   Widget savedListViewer(dynamic data){
     return   ListView.builder(
-      itemCount: widget.savedList.length,
+      itemCount: data.length,
       itemBuilder: (BuildContext context,int i){
         return GestureDetector(
           onTap: (){
-            Navigator.push(context, MaterialPageRoute(builder: (context)=>WebtoViewer(data[i],widget.savedList)));
+            Navigator.push(context, MaterialPageRoute(builder: (context)=> WebtoViewer(data[i],widget.saved)));
           },
           onHorizontalDragEnd: (details){
               print("to Delete");
               setState(() {
-                widget.savedList.removeAt(i);
+                 data.removeAt(i);
               });
           },
           child: Padding(
@@ -77,6 +83,35 @@ class _SavedNewsState extends State<SavedNews> {
     ),
   );
 
+@override
+  void initState() {
+    getDataFromDB();
+    if(widget.saved != null){
+      for(int i =0; i<widget.saved.length;i++){
+        print(widget.saved[i].id);
+      }
+    }
+    super.initState();
+  }
+
+  getDataFromDB() async{
+    try{
+      var result = await dB.queryAllRows();
+      if(result != null){
+        setState(() {
+          widget.saved = result;
+        });
+      }
+      if(widget.saved != null){
+        for(int i=0 ; i<result.length;i++){
+          print(result[i].url);
+        }
+      }
+    }catch(NoSuchMethod){
+      print('Emp');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -89,7 +124,7 @@ class _SavedNewsState extends State<SavedNews> {
             children: <Widget>[
                 Container(
                     height: MediaQuery.of(context).size.height - 90,
-                    child: widget.savedList.length == 0 ? empty : savedListViewer(widget.savedList)
+                    child: widget.saved.length == 0 ? empty : savedListViewer(widget.saved.reversed.toList())
                 )
             ],
           ),

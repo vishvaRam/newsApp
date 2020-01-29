@@ -1,4 +1,5 @@
 
+
 class Source{
   String name;
   Source({this.name});
@@ -13,6 +14,7 @@ class Source{
 }
 
 class Data{
+  int id;
   Source source;
   String author;
   String title;
@@ -25,15 +27,16 @@ class Data{
     return Data(
       source: Source.fromJson(json['source']),
       author: json['author'],
+        url: json['url'],
       title: json['title'],
       desc: json['description'],
-      url: json['url'],
       urltoimg: json['urlToImage']
     );
   }
 
+
+
   Map<String,dynamic> toMap() => {
-    "author":author,
     "url":url,
     "title":title,
     "urlToImage":urltoimg

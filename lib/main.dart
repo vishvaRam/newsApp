@@ -1,11 +1,13 @@
+import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'Functionality/Networking.dart';
 import 'package:newsapp/Decode/data.dart';
 import 'package:flutter/rendering.dart';
 import 'package:newsapp/Pages/Saved.dart';
+import 'package:connectivity/connectivity.dart';
+import 'package:newsapp/Functionality/database.dart';
 import 'listViewer.dart';
-
 
 void main() {
   runApp(MyApp());
@@ -22,7 +24,8 @@ var sport = rawUrl + Country+category+"sports"+ApiKey;
 var bussi = rawUrl + Country+category+"business"+ApiKey;
 var sc = rawUrl + Country+category+"science"+ApiKey;
 
-
+// Singelton class instance
+final dB = DatabaseHelper.instance;
 
 class MyApp extends StatefulWidget {
   @override
@@ -34,7 +37,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'News App',
+      title: 'News',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         brightness: Brightness.dark
@@ -52,63 +55,127 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMixin{
 
   List topNews = List<Data>();
-  List savedNews = List<Data>();
   List tech = List<Data>();
   List entertainment = List<Data>();
   List sports = List<Data>();
   List business = List<Data>();
   List science = List<Data>();
 
+  List<Data> saved = List<Data>();
+
+  bool isConnected;
+
   @override
   void initState() {
     super.initState();
+    // Connection Checking
+    getConnection();
+
+    // get Saved List if there is!
+    getDataFromDB();
 
     Networking net = Networking();
     net.output(all).then((data){
-      setState(() {
-        topNews.addAll(data);
-      });
+      if(data != null){
+        setState(() {
+          topNews.addAll(data);
+        });
+      }
+    }).catchError((err){
+      print("Printed ==="+err);
     });
+
     net.output(technology).then((q){
-      setState(() {
-        tech.addAll(q);
-      });
+      if(q !=null){
+        setState(() {
+          tech.addAll(q);
+        });
+      }
+    }).catchError((err){
+      print("Printed ==="+err);
     });
 
     net.output(entertain).then((data){
-      setState(() {
-        entertainment.addAll(data);
-      });
+      if(data != null){
+        setState(() {
+          entertainment.addAll(data);
+        });
+      }
+    }).catchError((err){
+      print("Printed ==="+err);
     });
 
     net.output(sport).then((data){
-      setState(() {
-        sports.addAll(data);
-      });
+      if(data != null){
+        setState(() {
+          sports.addAll(data);
+        });
+      }
+    }).catchError((err){
+      print("Printed ==="+err);
+    });
 
-    });
     net.output(bussi).then((data){
-      setState(() {
-        business.addAll(data);
-      });
+      if(data != null){
+        setState(() {
+          business.addAll(data);
+        });
+      }
+    }).catchError((err){
+      print("Printed ==="+err);
     });
+
     net.output(sc).then((data){
-      setState(() {
-        science.addAll(data);
-      });
-    });
+      if(data != null){
+        setState(() {
+          science.addAll(data);
+        });
+      }
+    }).catchError((err){
+      print("Printed ==="+err);
+    })
+    ;
   }
 
+  getDataFromDB() async{
+    try{
+      var result = await dB.queryAllRows();
+      if(result != null){
+        setState(() {
+          saved = result;
+        });
+      }
+      if(saved != null){
+        for(int i=0 ; i<result.length;i++){
+          print(result[i].url);
+        }
+      }
+    }catch(NoSuchMethod){
+      print('Emp');
+    }
+  }
 
+  getConnection() async{
+    bool sta = await status();
+    if(sta){
+      setState(() {
+        isConnected = true;
+      });
+    }
+    else {
+      setState(() {
+        isConnected = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
-    return Scaffold(
-//      drawer: Drawer(
-//        child: ,
-//        ),
 
+    // Over ride the class to stay where we are on the page
+    super.build(context);
+
+    return Scaffold(
       appBar: AppBar(
         centerTitle: true,
         title: Text("News"),
@@ -116,16 +183,9 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
           IconButton(
             icon: Icon(Icons.bookmark),
             onPressed: (){
-              print("icon btn");
               Navigator.push(context, MaterialPageRoute(
-                builder: (context)=> SavedNews(savedNews)
+                builder: (context)=> SavedNews(saved)
               ));
-              if(savedNews.length!=0){
-                print(savedNews.length.toString());
-              }
-              else{
-                print("Empty!");
-              }
             },
           )
         ],
@@ -152,18 +212,32 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
           ]),
           body: TabBarView(
               children: <Widget>[
-            topNews.length == 0 ? Center(child: CircularProgressIndicator(),): ListViewer(topNews,savedNews),
-            topNews.length == 0 ? Center(child: CircularProgressIndicator(),) : ListViewer(tech,savedNews),
-            topNews.length == 0 ? Center(child: CircularProgressIndicator(),) : ListViewer(entertainment,savedNews),
-            topNews.length == 0 ? Center(child: CircularProgressIndicator(),) : ListViewer(sports,savedNews),
-            topNews.length == 0 ? Center(child: CircularProgressIndicator(),) : ListViewer(business,savedNews),
-            topNews.length == 0 ? Center(child: CircularProgressIndicator(),) : ListViewer(science,savedNews),
+            Container(child: isConnected == true ? topNews.length == 0 ? Center(child: CircularProgressIndicator(),): ListViewer(topNews,saved): Center(child: Text("Connect to internet and restart the app"),),),
+            Container(child: isConnected == true ? topNews.length == 0 ? Center(child: CircularProgressIndicator(),) : ListViewer(tech,saved): Center(child: Text("Connect to internet and restart the app"),),),
+            Container(child: isConnected == true ? topNews.length == 0 ? Center(child: CircularProgressIndicator(),) : ListViewer(entertainment,saved): Center(child: Text("Connect to internet and restart the app"),),),
+            Container(child: isConnected == true ? topNews.length == 0 ? Center(child: CircularProgressIndicator(),) : ListViewer(sports,saved): Center(child: Text("Connect to internet and restart the app"),),),
+            Container(child: isConnected == true ? topNews.length == 0 ? Center(child: CircularProgressIndicator(),) : ListViewer(business,saved): Center(child: Text("Connect to internet and restart the app"),),),
+            Container(child: isConnected == true ? topNews.length == 0 ? Center(child: CircularProgressIndicator(),) : ListViewer(science,saved): Center(child: Text("Connect to internet and restart the app"),),),
           ]),
         ),),
     );
   }
 
+  // Set State on Connect to internet
+  Future<bool> status() async{
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.mobile || connectivityResult == ConnectivityResult.wifi) {
+      return true;
+    }
+    else{
+      return false;
+    }
+  }
+
+  // To Keep Alive the page
   @override
   bool get wantKeepAlive => true;
 
 }
+
+

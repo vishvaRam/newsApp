@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:newsapp/Decode/data.dart';
+import '../Functionality/database.dart';
+import 'package:newsapp/Functionality/database.dart';
 
 enum isSaved {
   True,
@@ -8,17 +10,19 @@ enum isSaved {
 }
 
 class WebtoViewer extends StatefulWidget {
-  final List<Data> saved;
+  List<Data> savedList = List<Data>();
   final Data data;
-  WebtoViewer(this.data ,this.saved);
+  WebtoViewer(this.data,this.savedList);
   @override
   _WebtoViewerState createState() => _WebtoViewerState();
 }
 
 class _WebtoViewerState extends State<WebtoViewer> {
   var temp = isSaved.False;
-  bool color = false;
   bool isLoading;
+
+  // Singletone class
+  final dB = DatabaseHelper.instance;
 
   @override
   void initState() {
@@ -32,9 +36,10 @@ class _WebtoViewerState extends State<WebtoViewer> {
     child: Text("Empty"),
   );
 
-   void showSnackBar(BuildContext context,String text){
+  void showSnackBar(BuildContext context,String text){
      final snakBar = SnackBar(
-      content: Text(text),
+      content: Text(text,style: TextStyle(fontSize: 18.0),),
+       duration: Duration(seconds: 1),
        elevation: 9.0,
        backgroundColor: Theme.of(context).accentColor,
      );
@@ -60,6 +65,22 @@ class _WebtoViewerState extends State<WebtoViewer> {
     ],);
   }
 
+  Future<List<Data>> getDataFromDB() async{
+    try{
+      var result = await dB.queryAllRows();
+      if(result != null){
+        return result;
+      }
+      if(widget.savedList != null){
+        for(int i=0 ; i<result.length;i++){
+          print(result[i].url);
+        }
+      }
+    }catch(NoSuchMethod){
+      print('Emp');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -70,48 +91,62 @@ class _WebtoViewerState extends State<WebtoViewer> {
       floatingActionButton: Builder(
         builder: (context){
           return FloatingActionButton(
-            onPressed: (){
+            onPressed: () async{
               print("to Save");
-
-              if(widget.saved.length == 0){
-                showSnackBar(context, "Saved to bookmarks");
+              showSnackBar(context, "Saved");
+              var sa =await dB.insert(widget.data);
+              print(sa);
+              var res = await getDataFromDB();
+              print("result from DB = "+res.toString());
+              if(res.length == 0){
                 setState(() {
-                  widget.saved.add(widget.data);
-                  color = true;
+                  widget.savedList = res;
                 });
                 return;
               }
-              if(widget.saved.length !=0){
-                for(int i =0; i< widget.saved.length;i++){
-                  if(widget.saved[i].url==widget.data.url){
-                    setState(() {
-                      temp = isSaved.True;
-                    });
-                  }
-                }
+              setState(() {
+                widget.savedList = res;
+              });
 
-                if(temp == isSaved.True){
-                  showSnackBar(context, "Already exist");
-                  print("Already exist");
-                }
-                else{
-                  showSnackBar(context, "Saved to bookmarks");
-                  print("Add");
-                  setState(() {
-                    widget.saved.add(widget.data);
-                    temp = isSaved.True;
-                    color = true;
-                  });
-                }
-              }
-
+//              if(widget.savedList.length == 0){
+//                showSnackBar(context, "Saved first element");
+//                var sa =await dB.insert(widget.data);
+//                print(sa);
+//                var res = await getDataFromDB();
+//                print("result from DB = "+res.toString());
+//                widget.savedList = res;
+//                return;
+//              }
+//              if(widget.savedList.length !=0){
+//                print("not empty");
+//                for(int i =0; i< widget.savedList.length;i++){
+//                  print(widget.savedList[i].url.toString());
+//                  if(widget.savedList[i].url==widget.data.url){
+//                      temp = isSaved.True;
+//                  }
+//                }
+//
+//                if(temp == isSaved.True){
+//                  showSnackBar(context, "Already exist");
+//                  print("Already exist");
+//                }
+//                else{
+//                  temp = isSaved.True;
+//                  showSnackBar(context, "Saved to bookmarks");
+//                  print("Add");
+//                  await dB.insert(widget.data);
+//                  var res = await getDataFromDB();
+//                  widget.savedList = res;
+//                }
+//              }
             },
             elevation: 8.0,
             backgroundColor: Theme.of(context).accentColor,
-            child: color == false ? Icon(Icons.bookmark_border) : Icon(Icons.bookmark),
+            child: Icon(Icons.add),
           );
         },
       ),
     );
   }
+
 }

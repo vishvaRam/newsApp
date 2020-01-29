@@ -8,8 +8,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 // ignore: must_be_immutable
 class ListViewer extends StatefulWidget {
   List<Data> data ;
-  List<Data> savedNews ;
-  ListViewer(this.data,this.savedNews);
+  List<Data> saved;
+  ListViewer(this.data,this.saved);
   @override
   _ListViewerState createState() => _ListViewerState();
 }
@@ -29,7 +29,7 @@ class _ListViewerState extends State<ListViewer> with AutomaticKeepAliveClientMi
               splashColor: Theme.of(context).brightness == Brightness.dark ? Colors.white: Colors.black45,
               onTap: (){
                 print("sent to Explorer");
-                Navigator.push(context, MaterialPageRoute(builder: (context)=>WebtoViewer(widget.data[i],widget.savedNews)));
+                Navigator.push(context, MaterialPageRoute(builder: (context)=>WebtoViewer(widget.data[i],widget.saved),));
               },
               child: Column(
                 children: <Widget>[

@@ -5,6 +5,7 @@ import 'package:newsapp/Decode/data.dart';
 
 
 class Networking {
+  // to return the feature of output
   Future<List<Data>> output(String url) async{
     print(url);
     List local = List<Data>();
@@ -19,14 +20,10 @@ class Networking {
           local.add(Data.fromJson(i));
         }
         print("got request");
+        return local;
       }
-      else{
-          throw("err");
-      }
-      return local;
-    }catch(err,SocketException){
-      print(err);
-      print(SocketException);
+    }catch(SocketException){
+      print("Printed === "+SocketException.toString());
       return null;
     }
   }
