@@ -1,7 +1,5 @@
 import 'dart:io';
-
 import 'package:newsapp/Decode/data.dart';
-import 'package:newsapp/Pages/Saved.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 

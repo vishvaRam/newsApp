@@ -8,6 +8,7 @@ import 'package:newsapp/Pages/Saved.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:newsapp/Functionality/database.dart';
 import 'listViewer.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() {
   runApp(MyApp());
@@ -33,27 +34,8 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'News',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        brightness: Brightness.dark
-      ),
-      home: MyHomePage(),
-    );
-  }
-}
 
-class MyHomePage extends StatefulWidget {
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMixin{
-
+  bool isDark = false;
   List topNews = List<Data>();
   List tech = List<Data>();
   List entertainment = List<Data>();
@@ -65,12 +47,109 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
 
   bool isConnected;
 
+  void showSnackBar(BuildContext context,String text){
+    final snakBar = SnackBar(
+      content: Text(text,style: TextStyle(fontSize: 18.0),),
+      duration: Duration(seconds: 1),
+      elevation: 9.0,
+      backgroundColor: Theme.of(context).accentColor,
+    );
+
+    Scaffold.of(context).showSnackBar(snakBar);
+  }
+
+
+  Widget homePage (BuildContext context){
+    return Builder(
+      builder: (BuildContext context)=> Scaffold(
+        drawer: Drawer(
+          child: ListView(
+            children: <Widget>[
+              DrawerHeader(
+                  child: Center(child: Text("Settings",style: TextStyle(fontSize: 44.0,fontWeight: FontWeight.w400),))
+              ),
+              ListTile(
+                title: Text("Dark Theme",style: TextStyle(fontSize: 22.0,fontWeight: FontWeight.w400),),
+                trailing: Switch(
+                  value: isDark,
+                  onChanged: (change){
+                    setState(() {
+                      isDark = change;
+                    });
+                  },
+                ),
+              ),
+              ListTile(
+                title: Text("News API",style: TextStyle(fontSize: 22.0,fontWeight: FontWeight.w400)),
+                trailing: IconButton(icon: Icon(Icons.open_in_new) , onPressed: () async{
+                  final url = "https://newsapi.org/";
+                  if(await canLaunch(url)){
+                    await launch(url);
+                  }
+                  else{
+                    showSnackBar(context, "Can't open this url");
+                  }
+                }),
+              )
+            ],
+          ),
+        ),
+
+        appBar: AppBar(
+          centerTitle: true,
+          title: Text("News"),
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(Icons.bookmark),
+              onPressed: (){
+                Navigator.push(context, MaterialPageRoute(
+                    builder: (context)=> SavedNews(saved)
+                ));
+              },
+            )
+          ],
+        ),
+
+        body: DefaultTabController(length: 6,
+          child: Scaffold(
+            appBar: TabBar(
+                indicatorColor: Colors.white,
+                labelColor: isDark ? Colors.black87 : Colors.white,
+                unselectedLabelColor: isDark ? Colors.white60 : Colors.black45,
+                indicator: BoxDecoration(
+                    borderRadius: BorderRadius.all(Radius.circular(40.0)),
+                    color: isDark ? Colors.tealAccent : Colors.blue
+                ),
+                isScrollable: true,
+                tabs: [
+                  Tab(text: "All",),
+                  Tab(text: "Tech",),
+                  Tab(text: "Entertainment",),
+                  Tab(text: "Sports",),
+                  Tab(text: "business",),
+                  Tab(text: "Science",),
+                ]),
+            body: TabBarView(
+                children: <Widget>[
+                  Container(child: isConnected == true ? topNews.length == 0 ? Center(child: CircularProgressIndicator(),): ListViewer(topNews,saved): Center(child: Text("Connect to internet and restart the app"),),),
+                  Container(child: isConnected == true ? topNews.length == 0 ? Center(child: CircularProgressIndicator(),) : ListViewer(tech,saved): Center(child: Text("Connect to internet and restart the app"),),),
+                  Container(child: isConnected == true ? topNews.length == 0 ? Center(child: CircularProgressIndicator(),) : ListViewer(entertainment,saved): Center(child: Text("Connect to internet and restart the app"),),),
+                  Container(child: isConnected == true ? topNews.length == 0 ? Center(child: CircularProgressIndicator(),) : ListViewer(sports,saved): Center(child: Text("Connect to internet and restart the app"),),),
+                  Container(child: isConnected == true ? topNews.length == 0 ? Center(child: CircularProgressIndicator(),) : ListViewer(business,saved): Center(child: Text("Connect to internet and restart the app"),),),
+                  Container(child: isConnected == true ? topNews.length == 0 ? Center(child: CircularProgressIndicator(),) : ListViewer(science,saved): Center(child: Text("Connect to internet and restart the app"),),),
+                ]),
+          ),),
+      ),
+    );
+  }
+
+
+
   @override
   void initState() {
     super.initState();
     // Connection Checking
     getConnection();
-
     // get Saved List if there is!
     getDataFromDB();
 
@@ -136,7 +215,6 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
     })
     ;
   }
-
   getDataFromDB() async{
     try{
       var result = await dB.queryAllRows();
@@ -164,60 +242,19 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
-
-    // Over ride the class to stay where we are on the page
-    super.build(context);
-
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text("News"),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.bookmark),
-            onPressed: (){
-              Navigator.push(context, MaterialPageRoute(
-                builder: (context)=> SavedNews(saved)
-              ));
-            },
-          )
-        ],
-      ),
-
-      //topNews.length == 0 ? spinner : listBuilder(topNews)
-
-      body: DefaultTabController(length: 6,
-        child: Scaffold(
-          appBar: TabBar(
-            indicatorColor: Colors.black,
-            indicator: BoxDecoration(
-              borderRadius: BorderRadius.all(Radius.circular(40.0)),
-              color: Theme.of(context).primaryColorLight
-            ),
-            isScrollable: true,
-              tabs: [
-            Tab(text: "All",),
-            Tab(text: "Tech",),
-            Tab(text: "Entertainment",),
-            Tab(text: "Sports",),
-            Tab(text: "business",),
-            Tab(text: "Science",),
-          ]),
-          body: TabBarView(
-              children: <Widget>[
-            Container(child: isConnected == true ? topNews.length == 0 ? Center(child: CircularProgressIndicator(),): ListViewer(topNews,saved): Center(child: Text("Connect to internet and restart the app"),),),
-            Container(child: isConnected == true ? topNews.length == 0 ? Center(child: CircularProgressIndicator(),) : ListViewer(tech,saved): Center(child: Text("Connect to internet and restart the app"),),),
-            Container(child: isConnected == true ? topNews.length == 0 ? Center(child: CircularProgressIndicator(),) : ListViewer(entertainment,saved): Center(child: Text("Connect to internet and restart the app"),),),
-            Container(child: isConnected == true ? topNews.length == 0 ? Center(child: CircularProgressIndicator(),) : ListViewer(sports,saved): Center(child: Text("Connect to internet and restart the app"),),),
-            Container(child: isConnected == true ? topNews.length == 0 ? Center(child: CircularProgressIndicator(),) : ListViewer(business,saved): Center(child: Text("Connect to internet and restart the app"),),),
-            Container(child: isConnected == true ? topNews.length == 0 ? Center(child: CircularProgressIndicator(),) : ListViewer(science,saved): Center(child: Text("Connect to internet and restart the app"),),),
-          ]),
-        ),),
-    );
+    return  MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'News',
+        theme: ThemeData(
+          brightness: isDark ? Brightness.dark : Brightness.light,
+        ),
+        home: homePage(context),
+      );
   }
-
+}
   // Set State on Connect to internet
   Future<bool> status() async{
     var connectivityResult = await (Connectivity().checkConnectivity());
@@ -227,12 +264,5 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
     else{
       return false;
     }
-  }
-
-  // To Keep Alive the page
-  @override
-  bool get wantKeepAlive => true;
 
 }
-
-
