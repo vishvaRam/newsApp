@@ -9,6 +9,9 @@ import 'package:connectivity/connectivity.dart';
 import 'package:newsapp/Functionality/database.dart';
 import 'listViewer.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/services.dart';
+
 
 void main() {
   runApp(MyApp());
@@ -35,13 +38,16 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
 
+  // For Dark Theme
   bool isDark = false;
+
   List topNews = List<Data>();
   List tech = List<Data>();
   List entertainment = List<Data>();
   List sports = List<Data>();
   List business = List<Data>();
   List science = List<Data>();
+  String dataKey = "Theme";
 
   List<Data> saved = List<Data>();
 
@@ -58,6 +64,18 @@ class _MyAppState extends State<MyApp> {
     Scaffold.of(context).showSnackBar(snakBar);
   }
 
+  // Shared Preference setter
+  Future<bool> setThemeData (bool local) async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var res= await prefs.setBool(dataKey, local);
+    return res;
+  }
+
+  // Shared Preference getter
+  Future<bool> getThemeData () async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(dataKey);
+  }
 
   Widget homePage (BuildContext context){
     return Builder(
@@ -72,10 +90,12 @@ class _MyAppState extends State<MyApp> {
                 title: Text("Dark Theme",style: TextStyle(fontSize: 22.0,fontWeight: FontWeight.w400),),
                 trailing: Switch(
                   value: isDark,
-                  onChanged: (change){
+                  onChanged: (change) async{
                     setState(() {
-                      isDark = change;
+                      isDark  = change;
                     });
+                    print("State"+ change.toString());
+                    bool res =await setThemeData(change);
                   },
                 ),
               ),
@@ -143,10 +163,51 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
+  getDataFromDB() async{
+    try{
+      var result = await dB.queryAllRows();
+      if(result != null){
+        setState(() {
+          saved = result;
+        });
+      }
+    }catch(NoSuchMethod){
+      print('Emp');
+    }
+  }
 
+  getConnection() async{
+    bool sta = await status();
+    if(sta){
+      setState(() {
+        isConnected = true;
+      });
+    }
+    else {
+      setState(() {
+        isConnected = false;
+      });
+    }
+  }
+
+  setData(bool local){
+    setThemeData(local).then((res){
+      print(res);
+    });
+  }
+
+  getData() async{
+    final res = await getThemeData();
+    print("Data for Dark = " +res.toString());
+    setState(() {
+      isDark = res ?? false;
+    });
+  }
 
   @override
   void initState() {
+    // Get shared Preference data
+    getData();
     super.initState();
     // Connection Checking
     getConnection();
@@ -215,33 +276,13 @@ class _MyAppState extends State<MyApp> {
     })
     ;
   }
-  getDataFromDB() async{
-    try{
-      var result = await dB.queryAllRows();
-      if(result != null){
-        setState(() {
-          saved = result;
-        });
-      }
-    }catch(NoSuchMethod){
-      print('Emp');
-    }
-  }
 
-  getConnection() async{
-    bool sta = await status();
-    if(sta){
-      setState(() {
-        isConnected = true;
-      });
-    }
-    else {
-      setState(() {
-        isConnected = false;
-      });
-    }
-  }
 
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

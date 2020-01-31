@@ -92,7 +92,7 @@ class _WebtoViewerState extends State<WebtoViewer> {
                   heroTag: "FAB1",
                   onPressed: () async{
                     print("to Save");
-                    showSnackBar(context, "Saved");
+                    showSnackBar(context, "Saved to bookmark");
                     var sa =await dB.insert(widget.data);
                     print(sa);
                     var res = await getDataFromDB();
@@ -159,7 +159,8 @@ class _WebtoViewerState extends State<WebtoViewer> {
           padding: const EdgeInsets.only(bottom: 10.0),
           child: Builder(
               builder:(BuildContext context){
-                return FloatingActionButton.extended(
+                return FloatingActionButton(
+                  child: Icon(Icons.open_in_new),
                   heroTag: "FAB2",
                   elevation: 20.0,
                   onPressed: () async {
@@ -170,7 +171,6 @@ class _WebtoViewerState extends State<WebtoViewer> {
                       throw "Could not launch "+ widget.data.url;
                     }
                   },
-                  label: Text(" Open with brower"),
                 );
               }
           ),
