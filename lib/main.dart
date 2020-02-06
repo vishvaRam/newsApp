@@ -19,7 +19,7 @@ void main() {
 
 const String Country = "in";
 const String ApiKey = "&apiKey=318936fec83d46d0b6fb17784fe63c32";
-const String rawUrl = "https://newsapi.org/v2/top-headlines?pageSize=50&country=";
+const String rawUrl = "https://newsapi.org/v2/top-headlines?pageSize=70&country=";
 const String all = rawUrl+Country+ApiKey;
 const String category= "&category=";
 var technology = rawUrl + Country+category+"technology"+ApiKey;
@@ -103,6 +103,18 @@ class _MyAppState extends State<MyApp> {
                 title: Text("News API",style: TextStyle(fontSize: 22.0,fontWeight: FontWeight.w400)),
                 trailing: IconButton(icon: Icon(Icons.open_in_new) , onPressed: () async{
                   final url = "https://newsapi.org/";
+                  if(await canLaunch(url)){
+                    await launch(url);
+                  }
+                  else{
+                    showSnackBar(context, "Can't open this url");
+                  }
+                }),
+              ),
+              ListTile(
+                title: Text("Flutter Docs",style: TextStyle(fontSize: 22.0,fontWeight: FontWeight.w400)),
+                trailing: IconButton(icon: Icon(Icons.open_in_new) , onPressed: () async{
+                  final url = "https://flutter.io/";
                   if(await canLaunch(url)){
                     await launch(url);
                   }
