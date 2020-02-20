@@ -79,115 +79,61 @@ class _WebtoViewerState extends State<WebtoViewer> {
     }
   }
 
-  Widget floatingActionButton (){
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.end,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.only(bottom: 10.0),
-          child: Builder(
-              builder: (context){
-                return FloatingActionButton(
-                  heroTag: "FAB1",
-                  onPressed: () async{
-                    print("to Save");
-                    showSnackBar(context, "Saved to bookmark");
-                    var sa =await dB.insert(widget.data);
-                    print(sa);
-                    var res = await getDataFromDB();
-                    setState(() {
-                      widget.savedList = res;
-                    });
-
-          //              if(widget.savedList.length == 0){
-          //                showSnackBar(context, "Saved first element");
-          //                var sa =await dB.insert(widget.data);
-          //                print(sa);
-          //                var res = await getDataFromDB();
-          //                print("result from DB = "+res.toString());
-          //                widget.savedList = res;
-          //                return;
-          //              }
-          //              if(widget.savedList.length !=0){
-          //                print("not empty");
-          //                for(int i =0; i< widget.savedList.length;i++){
-          //                  print(widget.savedList[i].url.toString());
-          //                  if(widget.savedList[i].url==widget.data.url){
-          //                      temp = isSaved.True;
-          //                  }
-          //                }
-          //
-          //                if(temp == isSaved.True){
-          //                  showSnackBar(context, "Already exist");
-          //                  print("Already exist");
-          //                }
-          //                else{
-          //                  temp = isSaved.True;
-          //                  showSnackBar(context, "Saved to bookmarks");
-          //                  print("Add");
-          //                  await dB.insert(widget.data);
-          //                  var res = await getDataFromDB();
-          //                  widget.savedList = res;
-          //                }
-          //              }
-                    },
-                      elevation: 20.0,
-                      backgroundColor: Theme.of(context).accentColor,
-                      child: Icon(Icons.add),
-                    );
-                },
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(bottom: 10.0),
-          child: Builder(
-            builder: (context){
-              return FloatingActionButton(
-                heroTag: "share",
-                onPressed: () {
-                  Share.share(widget.data.url,subject: widget.data.title);
-                },
-                elevation: 20.0,
-                backgroundColor: Theme.of(context).accentColor,
-                child: Icon(Icons.share),
-              );
-            },
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(bottom: 10.0),
-          child: Builder(
-              builder:(BuildContext context){
-                return FloatingActionButton(
-                  child: Icon(Icons.open_in_new),
-                  heroTag: "FAB2",
-                  elevation: 20.0,
-                  onPressed: () async {
-                    String url = widget.data.url;
-                    if(await canLaunch(url)){
-                      await launch(url);
-                    }else{
-                      throw "Could not launch "+ widget.data.url;
-                    }
-                  },
-                );
-              }
-          ),
-        ),
-      ],
-    );
-  }
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Explore"),),
+      appBar: AppBar(
+        title: Text("Explore"),
+        actions: <Widget>[
+          Builder(
+            builder: (context){
+              return IconButton(
+                icon: Icon(Icons.bookmark),
+                onPressed: () async {
+                print("to Save");
+                showSnackBar(context, "Saved to bookmark");
+                var sa =await dB.insert(widget.data);
+                print(sa);
+                var res = await getDataFromDB();
+                setState(() {
+                widget.savedList = res;
+                  });
+                },
+                );
+              },
+            ),
+          Builder(
+              builder: (context){
+                return IconButton(
+                  icon: Icon(Icons.share),
+                  onPressed: (){
+                    Share.share(widget.data.url,subject: widget.data.title);
+                  },
+                );
+              },
+            ),
+          Builder(
+            builder: (context){
+              return IconButton(
+                icon: Icon(Icons.open_in_new),
+                onPressed: () async {
+                  String url = widget.data.url;
+                  if(await canLaunch(url)){
+                    await launch(url);
+                  }else{
+                    throw "Could not launch "+ widget.data.url;
+                  }
+                },
+              );
+            },
+          )
+        ],
+      ),
+
       body: SafeArea(
         child: widget.data.url == null ? emptyWidget : viewer(widget.data.url),
       ),
-      floatingActionButton: floatingActionButton()
       );
   }
 

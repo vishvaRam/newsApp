@@ -130,6 +130,7 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           centerTitle: true,
           title: Text("News"),
+          elevation: 12.0,
           actions: <Widget>[
             IconButton(
               icon: Icon(Icons.bookmark),
